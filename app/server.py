@@ -6,8 +6,4 @@ Run it on its own over stdio (for Claude Code):
 
 from fastmcp import FastMCP
 
-from app.tools import math_tools
-
 mcp = FastMCP("my-mcp")
-
-mcp.add_tool(math_tools.add)
