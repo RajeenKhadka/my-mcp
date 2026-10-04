@@ -1,0 +1,6 @@
+fastapi>=0.142.2
+fastmcp>=4.0.11
+uvicorn>=0.54.0
+
+# Install this project's `app` package so `from app...` works everywhere
+-e .
