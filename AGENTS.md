@@ -12,6 +12,7 @@ Python 3.13, managed with `uv`.
 ```
 main.py              FastAPI app: /health route + MCP server mounted at /mcp
 app/server.py        Creates the FastMCP instance (`mcp`) and registers every tool
+app/db.py            Postgres connection helper (`get_connection()`) for the Neon database
 app/tools/           Tool modules, plain Python functions grouped by topic
 tests/               pytest tests (create as needed)
 start.sh             pip/venv-based setup + run script (no uv required)
@@ -51,6 +52,16 @@ uv run pytest                            # run tests
 
 Keep tool functions free of FastMCP decorators so they stay easy to unit-test.
 
+## Database
+
+Postgres hosted on [Neon](https://neon.com), accessed with `psycopg` (v3).
+
+- `DATABASE_URL` lives in `.env.local` (git-ignored), written by `neon link`; refresh it with `neon env`.
+  `app/db.py` loads that file, but a real `DATABASE_URL` environment variable takes priority.
+- Open connections with `with get_connection() as conn:` so they always close.
+- Always pass values as query parameters (`conn.execute("... where id = %s", (id,))`), never with f-strings.
+- `.neon` (git-ignored) records which Neon project and branch this folder is linked to.
+
 ## Conventions
 
 - Import from the `app` package (`from app...`); it is installed as a package and pytest has `pythonpath = ["."]`.
@@ -61,5 +72,5 @@ Keep tool functions free of FastMCP decorators so they stay easy to unit-test.
 ## Don'ts
 
 - Never commit `.env` / `.env.*` files or secrets; load config from environment variables.
-- Don't commit local data (e.g. `workouts.json`) or `.venv/`.
+- Don't commit local data (e.g. `workouts.json`), `.neon`, or `.venv/`.
 - Don't edit `uv.lock` by hand.
