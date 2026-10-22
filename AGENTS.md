@@ -13,7 +13,9 @@ Python 3.13, managed with `uv`.
 main.py              FastAPI app: /health route + MCP server mounted at /mcp
 app/server.py        Creates the FastMCP instance (`mcp`) and registers every tool
 app/db.py            Postgres connection helper (`get_connection()`) for the Neon database
+app/migrate.py       Applies the SQL changesets in migrations/ (tracked in public.schema_migrations)
 app/tools/           Tool modules, plain Python functions grouped by topic
+migrations/          SQL changesets, one file per change: NNN_short_name.sql
 tests/               pytest tests (create as needed)
 start.sh             pip/venv-based setup + run script (no uv required)
 requirements.txt     Mirror of pyproject dependencies for start.sh
@@ -61,6 +63,26 @@ Postgres hosted on [Neon](https://neon.com), accessed with `psycopg` (v3).
 - Open connections with `with get_connection() as conn:` so they always close.
 - Always pass values as query parameters (`conn.execute("... where id = %s", (id,))`), never with f-strings.
 - `.neon` (git-ignored) records which Neon project and branch this folder is linked to.
+
+### Schema changes (changesets)
+
+Every schema change is a new SQL file in `migrations/`, named with the next number: `002_add_issues.sql`.
+
+```bash
+uv run python -m app.migrate --status    # applied / pending / edited
+uv run python -m app.migrate             # apply pending changesets, each in its own transaction
+```
+
+- Applied files are recorded in `public.schema_migrations` with a checksum. **Never edit a file that has
+  been applied**: the runner refuses it. Change the schema with a new file instead.
+- Try a changeset on a Neon branch first, then run it on the main branch.
+- DB tests run only when `TEST_DATABASE_URL` points at a throwaway Postgres; they drop the `nyc_today` schema.
+
+### NYC Today tables (schema `nyc_today`)
+
+- `runs`: one row per agent run (researcher, Vera check or Boss), with model and token usage.
+- `items`: one row per item a researcher found, linked to its run by `run_id`.
+  Absent optional values are `NULL`, never `''`; the constraints reject anything else.
 
 ## Conventions
 
