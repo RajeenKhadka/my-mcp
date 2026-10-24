@@ -133,11 +133,16 @@ def test_bad_item_rejected(conn, change: dict) -> None:
 
 
 @needs_db
-def test_music_keeps_exact_price(conn) -> None:
+@pytest.mark.parametrize(
+    "price",
+    # real Juno prices: Music keeps the price exactly as the venue states it
+    ["$35.46–$45.76", "$30 advance, $35 day of show", "$10 suggested donation", "$25 / $40 / $50 / $55", "Free"],
+)
+def test_music_keeps_exact_price(conn, price: str) -> None:
     migrate(conn)
     insert(conn, "runs", {**RUN, "run_id": "run-2", "agent": "juno"})
     insert(conn, "items", {**ITEM, "run_id": "run-2", "ref": "juno:0", "agent": "juno",
-                           "section": "Music", "price": "$35.46–$45.76"})
+                           "section": "Music", "price": price})
 
 
 @needs_db
