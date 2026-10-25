@@ -1,6 +1,6 @@
 -- NYC Today: one row per agent run, one row per item a researcher found.
 -- Item text fields mirror the office's item JSON, renamed to snake_case
--- (what -> summary, confirmedOn -> confirmed_on, sourceDate -> source_date).
+-- (confirmedOn -> confirmed_on, sourceDate -> source_date).
 -- Absent optional values are NULL, never ''.
 
 create schema if not exists nyc_today;
